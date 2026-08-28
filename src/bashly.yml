@@ -1,0 +1,46 @@
+name: itkdev-helper
+help: ITK Development helper
+version: 0.1.0
+
+environment_variables:
+  - name: ITKDEV_HELPER_CONFIG_FILE
+    help: Location of the config file
+    default: $HOME/.itkdev-helper.ini
+
+dependencies:
+  op: visit https://www.1password.dev/cli for more information
+  jq: visit https://jqlang.org/download/ for more information
+
+commands:
+  - name: composer-auth-github
+    help: |
+      Set GitHub token in `auth.json`.
+
+      Sets GitHub token in `auth.json` to authenticate when using private
+      repositories (cf.
+      https://getcomposer.org/doc/articles/authentication-for-private-packages.md#manual-github-oauth).
+
+    flags:
+      - long: --token
+        arg: token
+        help: The token to set.
+      - long: --1password-item-id
+        arg: ID
+        help: |
+          The 1Password item ID.
+
+          If not specified, the value of `AUTH_TOKEN_OP_ITEM_ID` in `$HOME/.itkdev-helper.ini` will be used.
+
+          Used only if `--token` is not specified.
+
+  # https://bashly.dev/advanced/bash-completion/
+  - name: completions
+    private: true
+    help: |-
+      Generate bash completions.
+
+      Add
+
+      eval $(itkdev-helper completions)
+
+      to your ~/.bashrc or similar.
