@@ -42,20 +42,9 @@ Options:
   --version, -v
     Show version number
 
-Environment Variables:
-  ITKDEV_HELPER_CONFIG_FILE
-    Location of the config file
-    Default: $HOME/.itkdev-helper.ini
-
 ```
 
 <!-- OUTPUT:END -->
-
-## Configuration
-
-Configuration for the command is defined in `$HOME/.itkdev-helper.ini` (or whatever the environment variable
-`ITKDEV_HELPER_CONFIG_FILE` may be set to). If a configuration value is missing, the command will ask for it, but
-afterwards any configuration changes must be made manually.
 
 ## Development
 

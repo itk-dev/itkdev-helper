@@ -1,15 +1,11 @@
 # shellcheck shell=bash
 
 auth_token="${args["--token"]:-}"
-op_item_id="${args["--1password-item-id"]:-}"
 
 if [ -z "$auth_token" ]; then
 	# Get token from 1Password
-	printf "Getting token from 1Password …\n"
-	if [ -z "$op_item_id" ]; then
-		op_item_id=$(config_get "AUTH_TOKEN_OP_ITEM_ID")
-		auth_token=$(op item get "$op_item_id" --fields token --reveal)
-	fi
+	printf "Getting token from GitHub CLI …\n"
+	auth_token=$(gh auth token)
 fi
 
 if [ -z "$auth_token" ]; then
@@ -28,7 +24,7 @@ mv "$temp_filename" "$auth_filename"
 printf "Token added in %s.\n" "$auth_filename"
 
 # Add auth.json to .gitignore if not already present
-gitignore_line="auth.json"
+gitignore_line="/auth.json"
 gitignore_filename=".gitignore"
 
 if [ ! -e "$gitignore_filename" ]; then
