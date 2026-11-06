@@ -1,0 +1,33 @@
+name: Project
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  coding-standards-shell-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: go-task/setup-task@v1
+
+      - run: |
+          task coding-standards:shell-script:check
+
+      - name: Check nothing has changed
+        run: git diff --exit-code
+
+  docs-up-to-date:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: go-task/setup-task@v1
+
+      - run: |
+          task docs:update
+
+      - name: Check nothing has changed
+        run: git diff --exit-code

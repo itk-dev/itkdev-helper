@@ -1,0 +1,123 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  build:
+    desc: Build for production
+    cmds:
+      - docker compose run --rm --env VERSION yq '.version = env(VERSION)' < src/bashly.yml > bashly.tagged.yml
+      - defer: rm -f bashly.tagged.yml
+      - task: bashly
+        vars:
+          TASK_ARGS: generate --upgrade --env production
+          BASHLY_CONFIG_PATH: bashly.tagged.yml
+    requires:
+      vars:
+        - VERSION
+
+  build:dev:
+    desc: Build for development
+    cmds:
+      - task: bashly
+        vars:
+          TASK_ARGS: generate
+
+  compose:pull:
+    desc: Pull all docker images
+    cmd: docker compose --profile '*' pull
+
+  coding-standards:apply:
+    desc: 'Apply coding standards'
+    cmds:
+      - task: coding-standards:markdown:apply
+      - task: coding-standards:yaml:apply
+
+  coding-standards:check:
+    desc: 'Apply and check coding standards'
+    deps:
+      - compose:pull
+    cmds:
+      - task: coding-standards:markdown:check
+      - task: coding-standards:yaml:check
+      - task: coding-standards:shell-script:check
+
+  coding-standards:markdown:apply:
+    desc: 'Apply coding standards for Markdown'
+    cmds:
+      # Cf. .github/workflows/markdown.yaml
+      - docker compose run --rm markdownlint markdownlint '**/*.md' --fix
+
+  coding-standards:markdown:check:
+    desc: 'Apply and check coding standards for Markdown'
+    cmds:
+      - task: coding-standards:markdown:apply
+      # Cf. .github/workflows/markdown.yaml
+      - docker compose run --rm markdownlint markdownlint '**/*.md'
+
+  coding-standards:shell-script:check:
+    desc: 'Check coding standards for shell scripts'
+    cmds:
+      - task: coding-standards:shellcheck:check
+      - task: coding-standards:shfmt:check
+
+  coding-standards:shellcheck:check:
+    desc: 'Check coding standards for shell scripts'
+    cmds:
+      # https://github.com/koalaman/shellcheck?tab=readme-ov-file#installing
+      - docker compose run --rm shellcheck --external-sources {{.GLOB}}
+    vars:
+      # We use a block scalar (https://yaml-multiline.info/#block-scalars) here to make escaping (a little) easier.
+      GLOB: >-
+        {{.CLI_ARGS | default "src/*.sh src/lib/custom/*.sh"}}
+
+  coding-standards:shfmt:apply:
+    desc: 'Format shell scripts with shfmt'
+    cmds:
+      # https://hub.docker.com/r/mvdan/shfmt/
+      - docker compose run --rm shfmt --write {{.GLOB}}
+    vars:
+      # We use a block scalar (https://yaml-multiline.info/#block-scalars) here to make escaping (a little) easier.
+      GLOB: >-
+        {{.CLI_ARGS | default "src/*.sh src/lib/custom/*.sh"}}
+
+  coding-standards:shfmt:check:
+    desc: 'Check shell scripts with shfmt'
+    cmds:
+      - task: coding-standards:shfmt:apply
+      # https://hub.docker.com/r/mvdan/shfmt/
+      - docker compose run --rm shfmt --list {{.GLOB}}
+    vars:
+      # We use a block scalar (https://yaml-multiline.info/#block-scalars) here to make escaping (a little) easier.
+      GLOB: >-
+        {{.CLI_ARGS | default "src/*.sh src/lib/custom/*.sh"}}
+
+  coding-standards:yaml:apply:
+    desc: 'Apply coding standards for YAML'
+    cmds:
+      # Cf. .github/workflows/yaml.yaml
+      - docker compose run --rm prettier '**/*.{yml,yaml}' --write
+
+  coding-standards:yaml:check:
+    desc: 'Apply and check coding standards for YAML'
+    cmds:
+      - task: coding-standards:yaml:apply
+      # Cf. .github/workflows/yaml.yaml
+      - docker compose run --rm prettier '**/*.{yml,yaml}' --check
+
+  bashly:
+    internal: true
+    cmds:
+      # https://bashly.dev/installation/
+      - docker compose run --rm {{if .BASHLY_CONFIG_PATH}}--env BASHLY_CONFIG_PATH={{.BASHLY_CONFIG_PATH}}{{end}} bashly {{.TASK_ARGS}} {{.CLI_ARGS}}
+
+  default:
+    cmd: task --list
+    silent: true
+
+  docs:update:
+    desc: Update documentation
+    deps:
+      - build:dev
+    cmds:
+      - docker compose run --rm markdown-code-runner README.md
