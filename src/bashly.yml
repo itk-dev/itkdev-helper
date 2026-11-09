@@ -1,0 +1,34 @@
+name: itkdev-helper
+help: ITK Development helper
+version: 0.1.0
+
+dependencies:
+  gh: visit https://cli.github.com/manual/ for more information
+  jq: visit https://jqlang.org/download/ for more information
+
+commands:
+  - name: composer-auth-github
+    help: |
+      Set GitHub token in `auth.json`.
+
+      Sets GitHub token in `auth.json` to authenticate when using private
+      repositories (cf.
+      https://getcomposer.org/doc/articles/authentication-for-private-packages.md#manual-github-oauth).
+      `gh auth token` is used to get the token.
+
+    flags:
+      - long: --token
+        arg: token
+        help: The token to set.
+
+  # https://bashly.dev/advanced/bash-completion/
+  - name: completions
+    private: true
+    help: |-
+      Generate bash completions.
+
+      Add
+
+      eval $(itkdev-helper completions)
+
+      to your ~/.bashrc or similar.

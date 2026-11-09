@@ -1,0 +1,68 @@
+services:
+  bashly:
+    # https://bashly.dev/installation/
+    image: dannyben/bashly
+    profiles:
+      - dev
+    volumes:
+      - ./:/app
+
+  yq:
+    image: mikefarah/yq
+    profiles:
+      - dev
+    volumes:
+      - ./:/workdir
+
+  shellcheck:
+    image: koalaman/shellcheck:stable
+    profiles:
+      - dev
+    volumes:
+      - ./:/app
+    working_dir: /app
+
+  shfmt:
+    image: mvdan/shfmt
+    profiles:
+      - dev
+    volumes:
+      - ./:/app
+    working_dir: /app
+
+  markdown-code-runner:
+    build:
+      dockerfile_inline: |
+        # https://github.com/basnijholt/markdown-code-runner#installation
+        FROM python:3
+
+        RUN apt-get update && apt-get install --yes python3-pip \
+          && pip3 install --upgrade pip \
+          && pip3 install markdown-code-runner
+
+        WORKDIR /app
+
+        ENTRYPOINT ["markdown-code-runner"]
+
+    profiles:
+      - dev
+    volumes:
+      - ./:/app
+
+  markdownlint:
+    image: itkdev/markdownlint
+    profiles:
+      - dev
+    volumes:
+      - ./:/md
+
+  prettier:
+    # Prettier does not (yet, fcf.
+    # https://github.com/prettier/prettier/issues/15206) have an official
+    # docker image.
+    # https://hub.docker.com/r/jauderho/prettier is good candidate (cf. https://hub.docker.com/search?q=prettier&sort=updated_at&order=desc)
+    image: jauderho/prettier
+    profiles:
+      - dev
+    volumes:
+      - ./:/work

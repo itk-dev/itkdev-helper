@@ -7,4 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-1](https://github.com/itk-dev/itkdev-helper/pull/1)
+  Add `composer-auth-github` command.
+
 [Unreleased]: https://github.com/itk-dev/itkdev-helper
